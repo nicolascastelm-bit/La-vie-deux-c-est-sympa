@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#160919">
+  <meta name="description" content="Jeu privé et fluide pour deux adultes, en local ou à distance.">
+  <title>Le Jeu du Plaisir — V10 Édition Finale</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="statusBadge" class="status-badge">
+    <span class="status-dot"></span>
+    <span id="statusText">Connexion…</span>
+  </div>
+
+  <main class="app">
+    <section id="homeScreen" class="screen active">
+      <article class="card hero">
+        <p class="eyebrow">Jeu privé pour deux adultes</p>
+        <div class="hero-icons">♥ 🎲</div>
+        <h1>Le Jeu du Plaisir<br><span>Malin &amp; Coquin</span></h1>
+        <p class="lead">Choisissez un mode, lancez le dé et jouez. En local ou à distance, sans menus compliqués.</p>
+        <div class="notice">🔞 Chaque carte peut être refusée, passée ou remplacée, sans justification.</div>
+        <div class="feature-strip">
+          <span>🎭 8 modes</span><span>🃏 800+ cartes</span><span>⚡ Partie rapide</span><span>💬 Chat</span>
+          <span>📞 Appel</span><span>📖 Souvenirs</span><span>🙈 Cartes cachées</span>
+        </div>
+        <div class="actions">
+          <button id="openCreate" class="btn primary">Créer une partie</button>
+          <button id="openJoin" class="btn secondary">Rejoindre une partie</button>
+          <button id="openSolo" class="btn success">Jouer à deux ici</button>
+          <button id="openRules" class="btn ghost">Règles</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="createScreen" class="screen">
+      <article class="card form-card">
+        <button class="back-link" data-home>← Retour à l’accueil</button>
+        <p class="eyebrow">Partie en ligne</p>
+        <h2>Créer une salle privée</h2>
+        <form id="createForm">
+          <label>Pseudo
+            <input id="hostName" maxlength="20" required placeholder="Ton prénom ou pseudo">
+          </label>
+          <fieldset>
+            <legend>Pion</legend>
+            <div class="token-grid">
+              <label><input type="radio" name="hostToken" value="💗" checked><span>💗</span></label>
+              <label><input type="radio" name="hostToken" value="🌹"><span>🌹</span></label>
+              <label><input type="radio" name="hostToken" value="🔥"><span>🔥</span></label>
+              <label><input type="radio" name="hostToken" value="💎"><span>💎</span></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Ambiance</legend>
+            <div class="mode-grid">
+              <label class="mode-choice mode-choice-amical"><input type="radio" name="onlineMode" value="amical"><span class="mode-preview">😄</span><strong>Amical</strong><small>Défis, rires et duels entre potes</small></label>
+              <label class="mode-choice mode-choice-cinema"><input type="radio" name="onlineMode" value="cinema"><span class="mode-preview">🎬</span><strong>Cinéma</strong><small>Répliques, mimes et scènes cultes</small></label>
+              <label class="mode-choice mode-choice-musique"><input type="radio" name="onlineMode" value="musique"><span class="mode-preview">🎵</span><strong>Musique</strong><small>Blind tests, karaoké et rythmes</small></label>
+              <label class="mode-choice mode-choice-romantique"><input type="radio" name="onlineMode" value="romantique" checked><span class="mode-preview">🌸</span><strong>Romantique</strong><small>Tendresse, souvenirs et élégance</small></label>
+              <label class="mode-choice mode-choice-sensuel"><input type="radio" name="onlineMode" value="sensuel"><span class="mode-preview">🔥</span><strong>Sensuel</strong><small>Flirt, tension et imagination</small></label>
+              <label class="mode-choice mode-choice-spicy"><input type="radio" name="onlineMode" value="spicy"><span class="mode-preview">🌶️</span><strong>Spicy</strong><small>Audace, mystère et consentement</small></label>
+              <label class="mode-choice mode-choice-bdsm"><input type="radio" name="onlineMode" value="bdsm"><span class="mode-preview">🎭</span><strong>BDSM</strong><small>Confiance, rôles, limites et consentement</small></label>
+              <label class="mode-choice mode-choice-mix"><input type="radio" name="onlineMode" value="mix"><span class="mode-preview">🎲</span><strong>Mix</strong><small>Toutes les ambiances réunies</small></label>
+            </div>
+            <p class="consent-hint">🛡️ Le mode BDSM reste non explicite : limites, mot de sécurité, droit de passer et aftercare sont prioritaires.</p>
+          </fieldset>
+
+          <label>Scénario
+            <select id="onlineScenario" required>
+              <option value="george-v">🏨 Une nuit au George V</option>
+              <option value="cinema">🎬 Notre soirée cinéma</option>
+              <option value="venise">🛶 Escapade à Venise</option>
+            </select>
+          </label>
+          <label>Durée de partie
+            <select id="onlineLength" required>
+              <option value="36">⚡ Rapide · environ 20 min</option>
+              <option value="49" selected>🎲 Standard · environ 35 min</option>
+              <option value="63">🏆 Longue · environ 50 min</option>
+            </select>
+          </label>
+          <label class="check-row"><input type="checkbox" required> Je confirme être majeur et accepter les règles de consentement.</label>
+          <p id="createError" class="error" aria-live="polite"></p>
+          <button class="btn primary full" type="submit">Créer la salle</button>
+        </form>
+      </article>
+    </section>
+
+    <section id="joinScreen" class="screen">
+      <article class="card form-card">
+        <button class="back-link" data-home>← Retour à l’accueil</button>
+        <p class="eyebrow">Invitation reçue</p>
+        <h2>Rejoindre une partie</h2>
+        <form id="joinForm">
+          <label>Code de salle
+            <input id="joinCode" class="room-code" minlength="6" maxlength="6" required placeholder="ABC123" autocomplete="off">
+          </label>
+          <label>Pseudo
+            <input id="guestName" maxlength="20" required placeholder="Ton prénom ou pseudo">
+          </label>
+          <fieldset>
+            <legend>Pion</legend>
+            <div class="token-grid">
+              <label><input type="radio" name="guestToken" value="💙" checked><span>💙</span></label>
+              <label><input type="radio" name="guestToken" value="🍓"><span>🍓</span></label>
+              <label><input type="radio" name="guestToken" value="🌙"><span>🌙</span></label>
+              <label><input type="radio" name="guestToken" value="👑"><span>👑</span></label>
+            </div>
+          </fieldset>
+          <label class="check-row"><input type="checkbox" required> Je confirme être majeur et accepter les règles de consentement.</label>
+          <p id="joinError" class="error" aria-live="polite"></p>
+          <button class="btn secondary full" type="submit">Rejoindre la salle</button>
+        </form>
+      </article>
+    </section>
+
+    <section id="soloScreen" class="screen">
+      <article class="card form-card">
+        <button class="back-link" data-home>← Retour à l’accueil</button>
+        <p class="eyebrow">Partie locale</p>
+        <h2>Jouer à deux sur cet écran</h2>
+        <p class="muted">Passez simplement l’écran à chaque tour : la carte reste cachée jusqu’à ce que le bon joueur soit prêt.</p>
+        <form id="soloForm">
+          <label>Joueur 1
+            <input id="soloName1" maxlength="20" required value="Joueur 1">
+          </label>
+          <label>Joueur 2
+            <input id="soloName2" maxlength="20" required value="Joueur 2">
+          </label>
+          <fieldset>
+            <legend>Ambiance</legend>
+            <div class="mode-grid">
+              <label class="mode-choice mode-choice-amical"><input type="radio" name="soloMode" value="amical"><span class="mode-preview">😄</span><strong>Amical</strong><small>Pour jouer entre potes</small></label>
+              <label class="mode-choice mode-choice-cinema"><input type="radio" name="soloMode" value="cinema"><span class="mode-preview">🎬</span><strong>Cinéma</strong><small>Comme une soirée au grand écran</small></label>
+              <label class="mode-choice mode-choice-musique"><input type="radio" name="soloMode" value="musique"><span class="mode-preview">🎵</span><strong>Musique</strong><small>Une scène néon et rythmée</small></label>
+              <label class="mode-choice mode-choice-romantique"><input type="radio" name="soloMode" value="romantique" checked><span class="mode-preview">🌸</span><strong>Romantique</strong><small>Ambiance douce et lumineuse</small></label>
+              <label class="mode-choice mode-choice-sensuel"><input type="radio" name="soloMode" value="sensuel"><span class="mode-preview">🔥</span><strong>Sensuel</strong><small>Ambiance chaude et feutrée</small></label>
+              <label class="mode-choice mode-choice-spicy"><input type="radio" name="soloMode" value="spicy"><span class="mode-preview">🌶️</span><strong>Spicy</strong><small>Ambiance sombre et intense</small></label>
+              <label class="mode-choice mode-choice-bdsm"><input type="radio" name="soloMode" value="bdsm"><span class="mode-preview">🎭</span><strong>BDSM</strong><small>Confiance, rôles, limites et consentement</small></label>
+              <label class="mode-choice mode-choice-mix"><input type="radio" name="soloMode" value="mix"><span class="mode-preview">🎲</span><strong>Mix</strong><small>Un peu de tout</small></label>
+            </div>
+            <p class="consent-hint">🛡️ Le mode BDSM reste non explicite : limites, mot de sécurité, droit de passer et aftercare sont prioritaires.</p>
+          </fieldset>
+
+          <label>Scénario
+            <select id="soloScenario" required>
+              <option value="george-v">🏨 Une nuit au George V</option>
+              <option value="cinema">🎬 Notre soirée cinéma</option>
+              <option value="venise">🛶 Escapade à Venise</option>
+            </select>
+          </label>
+          <label>Durée de partie
+            <select id="soloLength" required>
+              <option value="36">⚡ Rapide · environ 20 min</option>
+              <option value="49" selected>🎲 Standard · environ 35 min</option>
+              <option value="63">🏆 Longue · environ 50 min</option>
+            </select>
+          </label>
+          <label class="check-row"><input type="checkbox" required> Je confirme être majeur et accepter les règles de consentement.</label>
+          <button class="btn success full" type="submit">Lancer la partie locale</button>
+        </form>
+      </article>
+    </section>
+
+    <section id="waitingScreen" class="screen">
+      <article class="card centered">
+        <button class="back-link" data-leave>← Quitter la salle</button>
+        <p class="eyebrow">Salle créée</p>
+        <h2>En attente du deuxième joueur</h2>
+        <div class="room-box">
+          <small>Code de salle</small>
+          <strong id="waitingCode">------</strong>
+        </div>
+        <input id="inviteLink" readonly>
+        <div class="actions">
+          <button id="copyCode" class="btn secondary">Copier le code</button>
+          <button id="copyLink" class="btn ghost">Copier le lien</button>
+        </div>
+        <div id="waitingPlayers" class="player-list"></div>
+      </article>
+    </section>
+
+    <section id="readyScreen" class="screen">
+      <article class="card centered">
+        <button class="back-link" data-leave>← Quitter la salle</button>
+        <div class="large-icon">✅</div>
+        <p class="eyebrow">Deux joueurs connectés</p>
+        <h2>La partie peut commencer</h2>
+        <div id="readyPlayers" class="player-list"></div>
+        <button id="startGame" class="btn primary">Commencer la partie</button>
+        <p id="guestWaitText" class="muted hidden">En attente du lancement par le créateur…</p>
+      </article>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen">
+      <div class="game-layout">
+        <header class="card game-header">
+          <div class="game-title-block">
+            <p class="eyebrow"><span id="gameType">Partie</span> · <span id="gameCode">------</span></p>
+            <h2>Le Jeu du Plaisir <small class="v7-mark">V10 · ÉDITION FINALE</small></h2>
+            <p id="scenarioHeading" class="scenario-heading"></p>
+            <div id="modeAmbience" class="mode-ambience">
+              <span id="modeAmbienceIcon">🌸</span>
+              <span id="modeAmbienceText">Une soirée tendre et élégante</span>
+            </div>
+          </div>
+          <div class="game-header-actions">
+            <button id="callButton" class="btn call-btn" type="button">📞 Appel interne</button>
+            <button id="leaveGame" class="btn danger">Quitter</button>
+          </div>
+        </header>
+
+        <aside class="sidebar">
+          <section class="card compact">
+            <p class="eyebrow">Tour actuel</p>
+            <div class="current-player">
+              <span id="currentToken">💗</span>
+              <div><strong id="currentName">Joueur</strong><small id="currentPosition">Départ</small></div>
+            </div>
+            <p id="turnMessage" class="muted"></p>
+          </section>
+
+          <section id="playersPanel" class="card compact"></section>
+
+          <section class="card compact dice-panel">
+            <div id="diceFace" class="dice">⚄</div>
+            <button id="rollDice" class="btn primary" disabled>Lancer le dé</button>
+            <p id="diceMessage" class="muted">Synchronisation…</p>
+          </section>
+
+          <section class="card compact history-panel">
+            <h3>Historique</h3>
+            <ol id="historyList"></ol>
+          </section>
+        </aside>
+
+        <section class="card board-card">
+          <div class="board-heading">
+            <div>
+              <p class="eyebrow">Mode <span id="modeName"></span></p>
+              <h3 id="boardScenarioTitle">Atteignez exactement la case 63</h3>
+              <p id="boardStageText" class="muted"></p>
+            </div>
+            <div class="legend">💬 Question · ❤️ Complicité · 🎁 Surprise</div>
+          </div>
+          <div id="board" class="board"></div>
+        </section>
+
+        <aside class="chat-column">
+          <section class="card chat-card">
+            <div class="chat-header">
+              <div>
+                <p class="eyebrow">Discussion</p>
+                <h3>Tchat en direct</h3>
+              </div>
+              <button id="openJournal" class="btn ghost compact-btn" type="button">Journal</button>
+            </div>
+
+            <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+            <p id="typingIndicator" class="typing-indicator"></p>
+
+            <div class="media-toolbar" aria-label="Médias du tchat">
+              <button id="photoButton" class="media-btn" type="button" title="Envoyer une photo">📷 <span>Photo</span></button>
+              <button id="voiceButton" class="media-btn" type="button" title="Enregistrer un vocal">🎙️ <span>Vocal</span></button>
+              <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+              <span id="mediaStatus" class="media-status" aria-live="polite"></span>
+            </div>
+            <form id="chatForm" class="chat-form">
+              <textarea id="chatInput" maxlength="500" rows="2" placeholder="Écrire un message…" required></textarea>
+              <button class="btn secondary" type="submit">Envoyer</button>
+            </form>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section id="victoryScreen" class="screen">
+      <article class="card centered">
+        <div class="large-icon">🏆</div>
+        <h2 id="victoryTitle">Victoire !</h2>
+        <p id="victoryText"></p>
+        <button class="btn primary" data-home>Retour à l’accueil</button>
+      </article>
+    </section>
+  </main>
+
+  <dialog id="rulesDialog" class="dialog">
+    <button id="closeRules" class="dialog-close">✕</button>
+    <h2>Règles</h2>
+    <p>Le créateur partage le lien ou le code. Seul le joueur dont c’est le tour peut lancer le dé.</p>
+    <p>Le mode solo permet de contrôler les deux joueurs sur un seul appareil.</p>
+    <p><strong>Consentement :</strong> chaque carte peut être refusée, passée ou remplacée librement.</p>
+  </dialog>
+
+
+  <dialog id="handoffDialog" class="dialog handoff-dialog">
+    <div class="handoff-symbol">🙈</div>
+    <p class="eyebrow">CARTE CACHÉE</p>
+    <h2>Passe l'écran à <span id="handoffPlayerName">Joueur</span></h2>
+    <p class="muted">La nouvelle carte ne sera révélée qu'après validation.</p>
+    <button id="revealLocalCard" class="btn primary full" type="button">Je suis prêt·e — révéler la carte</button>
+  </dialog>
+
+  <dialog id="challengeDialog" class="dialog challenge-dialog">
+    <div id="challengeIcon" class="large-icon">❤️</div>
+    <p id="challengeCategory" class="eyebrow"></p><span id="challengeRarity" class="rarity-badge">COMMUNE</span>
+    <h2 id="challengeTitle"></h2>
+    <p id="challengeText" class="challenge-text"></p>
+
+    <div id="writtenAnswerBox" class="written-answer-box hidden">
+      <label id="writtenAnswerLabel" for="writtenAnswer">Ta réponse écrite</label>
+      <textarea id="writtenAnswer" maxlength="1000" rows="4" placeholder="Écris librement ta réponse ici…"></textarea>
+      <button id="sendWrittenAnswer" class="btn secondary full" type="button">Partager ma réponse</button>
+      <p id="writtenAnswerStatus" class="muted"></p>
+    </div>
+
+    <div id="receivedAnswerBox" class="received-answer-box hidden">
+      <p class="eyebrow">Réponse reçue</p>
+      <blockquote id="receivedAnswerText"></blockquote>
+    </div>
+
+    <div id="challengeActions" class="actions">
+      <button id="replaceChallenge" class="btn ghost">🔄 Autre carte</button>
+      <button id="skipChallenge" class="btn secondary">Passer sans se justifier</button>
+      <button id="favoriteChallenge" class="btn ghost">☆ Souvenir</button>
+      <button id="completeChallenge" class="btn primary">✓ Fait !</button>
+    </div>
+    <p id="challengeWait" class="muted hidden">En attente de l’autre joueur…</p>
+  </dialog>
+
+  
+  <dialog id="journalDialog" class="dialog journal-dialog dashboard-dialog">
+    <button id="closeJournal" class="dialog-close">✕</button>
+    <p class="eyebrow">VOTRE SOIRÉE PARTAGÉE</p>
+    <h2>Tableau de bord</h2>
+    <div class="journal-tabs">
+      <button class="journal-tab active" data-dashboard-tab="journal">📖 Journal</button>
+      <button class="journal-tab" data-dashboard-tab="memories">⭐ Souvenirs</button>
+      <button class="journal-tab" data-dashboard-tab="achievements">🏆 Succès</button>
+      <button class="journal-tab" data-dashboard-tab="stats">📊 Statistiques</button>
+    </div>
+    <div id="journalFilters" class="journal-tabs secondary-tabs">
+      <button class="journal-tab active" data-journal-filter="all">Tout</button>
+      <button class="journal-tab" data-journal-filter="message">Messages</button>
+      <button class="journal-tab" data-journal-filter="answer">Réponses</button>
+      <button class="journal-tab" data-journal-filter="card">Cartes</button>
+    </div>
+    <div id="journalList" class="journal-list"></div>
+    <div id="memoriesList" class="journal-list hidden"></div>
+    <div id="achievementsList" class="achievement-grid hidden"></div>
+    <div id="statsList" class="stats-grid hidden"></div>
+  </dialog>
+
+
+
+  <dialog id="callDialog" class="dialog call-dialog">
+    <button id="closeCallDialog" class="dialog-close" type="button">✕</button>
+    <p class="eyebrow">Appel privé dans la salle</p>
+    <h2 id="callTitle">Appel audio et vidéo</h2>
+    <p id="callStatus" class="muted">Prêt à appeler votre partenaire.</p>
+
+    <div class="video-grid">
+      <figure class="video-box">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <figcaption id="remoteVideoLabel">Partenaire</figcaption>
+      </figure>
+      <figure class="video-box local-video-box">
+        <video id="localVideo" autoplay playsinline muted></video>
+        <figcaption>Vous</figcaption>
+      </figure>
+    </div>
+
+    <div id="incomingCallBox" class="incoming-call hidden">
+      <strong>📲 Appel entrant</strong>
+      <span id="incomingCaller">Votre partenaire vous appelle.</span>
+    </div>
+
+    <div class="call-actions">
+      <button id="startCall" class="btn call-btn" type="button">📞 Appeler</button>
+      <button id="answerCall" class="btn success hidden" type="button">✓ Répondre</button>
+      <button id="declineCall" class="btn secondary hidden" type="button">Refuser</button>
+      <button id="toggleMute" class="btn ghost hidden" type="button">🎙️ Micro activé</button>
+      <button id="toggleCamera" class="btn ghost hidden" type="button">📹 Caméra activée</button>
+      <button id="hangupCall" class="btn danger hidden" type="button">☎ Raccrocher</button>
+    </div>
+
+    <p class="call-note">L’appel utilise WebRTC. Firebase établit la connexion entre ordinateur et téléphone. Pour les réseaux très restrictifs, ajoutez un serveur TURN dans RTC_CONFIG.</p>
+  </dialog>
+
+  <div id="toastArea" class="toast-area"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

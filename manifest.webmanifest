@@ -1,0 +1,9 @@
+{
+  "name": "Le Jeu du Plaisir — Édition Fun",
+  "short_name": "Jeu du Plaisir",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#160919",
+  "theme_color": "#e85d9e",
+  "lang": "fr"
+}
