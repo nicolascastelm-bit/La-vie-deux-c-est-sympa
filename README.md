@@ -62,3 +62,24 @@ Le projet `plaisir-malin-et-coquin` est déjà sélectionné.
 - Linux : exécutez `./DEPLOYER-LINUX.sh`
 
 Le script publie automatiquement les règles Firestore et Firebase Hosting. À la fin, copiez la ligne `Hosting URL`.
+
+
+## V6 — invitation simplifiée
+
+Après avoir cliqué sur **Créer la salle**, le jeu affiche automatiquement :
+
+- le code à six caractères ;
+- un bouton pour copier le code ;
+- un lien d’invitation complet ;
+- un bouton de partage natif sur téléphone ;
+- un QR code à scanner.
+
+Le lien contient automatiquement le code de la salle. Quand l’autre joueur l’ouvre, l’écran en ligne s’affiche et le code est déjà rempli.
+
+Exemple :
+
+```text
+https://votre-site.web.app/?room=ABC123&player=Gwen
+```
+
+Le QR code est produit par le service externe QuickChart. Le code et le lien restent copiables même si l’image du QR code ne se charge pas.

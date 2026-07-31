@@ -1,0 +1,107 @@
+(() => {
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const STORE='gwenNicolasGameV1';
+const initial={favorites:[],history:[],selected:[...new Set(CARDS.map(c=>c.category))],turn:'Gwen',photos:[],voices:[],songs:[],current:null,sound:true};
+let state=load(), deck=[], pointer=0, deferredPrompt=null, recorder=null, chunks=[], playMode='local';
+function load(){try{return {...initial,...JSON.parse(localStorage.getItem(STORE)||'{}')}}catch{return {...initial}}}
+function save(){localStorage.setItem(STORE,JSON.stringify(state)); updateStats()}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+function show(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));closeDrawer();if(id==='favoritesView')renderFavorites();if(id==='historyView')renderHistory();if(id==='albumView')renderAlbum();if(id==='playlistView')renderPlaylist();if(id==='categoriesView')renderCategories();window.scrollTo({top:0,behavior:'smooth'})}
+function closeDrawer(){$('#drawer').classList.remove('open');$('#overlay').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true')}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function buildDeck(){deck=shuffle(CARDS.filter(c=>state.selected.includes(c.category)).slice());pointer=0}
+function start(){
+  playMode='local';
+  document.body.classList.remove('online-mode');
+  $('#gameView').classList.remove('online-active');
+  $('#chatPanel').classList.add('hidden');
+  $('#onlineGameBar').classList.add('hidden');
+  if(!state.selected.length){toast('Choisissez au moins une catégorie');return}
+  buildDeck();show('gameView');drawLocal()
+}
+function drawLocal(){
+  if(!deck.length||pointer>=deck.length)buildDeck();
+  const c=deck[pointer++];
+  state.current=c.id;
+  state.history=[c.id,...state.history.filter(id=>id!==c.id)].slice(0,80);
+  save();renderCard(c);
+  state.turn=state.turn==='Gwen'?'Nicolas':'Gwen';
+  $('#turnBtn').textContent=state.turn;
+  $('#progressBar').style.width=((pointer/deck.length)*100)+'%'
+}
+function draw(){
+  if(playMode==='online'){
+    if(window.OnlineGame?.drawNext) window.OnlineGame.drawNext(state.selected);
+    else toast('Connexion en ligne en cours…');
+    return;
+  }
+  drawLocal();
+}
+function renderCard(c){const el=$('#card');el.classList.remove('flip','rare-card');void el.offsetWidth;el.classList.add('flip');if(c.rarity==='rare')el.classList.add('rare-card');el.style.background=`radial-gradient(circle at 10% 0%,rgba(255,255,255,.18),transparent 30%),linear-gradient(145deg,${c.color},#6a3b8f)`;$('#cardIcon').textContent=c.icon;$('#cardCategory').textContent=c.category.toUpperCase();$('#cardText').textContent=c.text;$('#cardNumber').textContent=`CARTE ${c.id} · ${pointer}/${deck.length}`;$('#rareBadge').classList.toggle('hidden',c.rarity!=='rare');$('#favoriteBtn').textContent=state.favorites.includes(c.id)?'★':'☆';beep()}
+function beep(){if(!state.sound)return;try{const C=window.AudioContext||window.webkitAudioContext,ctx=new C(),o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=420;g.gain.setValueAtTime(.035,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.09);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.09)}catch{}}
+function currentCard(){return CARDS.find(c=>c.id===state.current)}
+function toggleFavorite(){const c=currentCard();if(!c)return;state.favorites=state.favorites.includes(c.id)?state.favorites.filter(id=>id!==c.id):[c.id,...state.favorites];save();$('#favoriteBtn').textContent=state.favorites.includes(c.id)?'★':'☆';toast(state.favorites.includes(c.id)?'Ajoutée aux favoris':'Retirée des favoris')}
+function renderCategories(){const counts=CARDS.reduce((a,c)=>(a[c.category]=(a[c.category]||0)+1,a),{});$('#categoryGrid').innerHTML=Object.keys(counts).map(cat=>{const c=CARDS.find(x=>x.category===cat),on=state.selected.includes(cat);return `<button class="category-item ${on?'active':''}" style="--cat:${c.color}" data-cat="${cat}"><span>${c.icon}</span><b>${cat}</b><small>${counts[cat]} cartes</small><i class="category-check">${on?'✓':'○'}</i></button>`}).join('');$$('[data-cat]').forEach(b=>b.onclick=()=>{const cat=b.dataset.cat;state.selected=state.selected.includes(cat)?state.selected.filter(x=>x!==cat):[...state.selected,cat];save();renderCategories()})}
+function cardMini(c,removeLabel='Retirer'){return `<article class="mini-card" style="--mini:${c.color}"><small>${c.icon} ${c.category}</small><p>${c.text}</p><button data-remove="${c.id}">${removeLabel}</button></article>`}
+function renderFavorites(){const cs=state.favorites.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);$('#favoritesList').innerHTML=cs.length?cs.map(c=>cardMini(c)).join(''):'<div class="empty-message">Aucune carte favorite pour le moment.</div>';$$('#favoritesList [data-remove]').forEach(b=>b.onclick=()=>{state.favorites=state.favorites.filter(id=>id!==+b.dataset.remove);save();renderFavorites()})}
+function renderHistory(){const cs=state.history.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);$('#historyList').innerHTML=cs.length?cs.map(c=>`<article class="mini-card" style="--mini:${c.color}"><small>${c.icon} ${c.category}</small><p>${c.text}</p></article>`).join(''):'<div class="empty-message">L’historique apparaîtra après votre première carte.</div>'}
+function updateStats(){$('#totalCount').textContent=CARDS.length;$('#favCountHome').textContent=state.favorites.length;$('#memoryCountHome').textContent=state.photos.length+state.voices.length;$('#resumeBtn').classList.toggle('hidden',!state.current)}
+function addPhoto(file){if(!file||!file.type.startsWith('image/'))return;const r=new FileReader();r.onload=()=>{state.photos.unshift({id:Date.now(),data:r.result,date:new Date().toLocaleString('fr-FR')});if(state.photos.length>18)state.photos.pop();try{save();renderAlbum();toast('Photo ajoutée')}catch{state.photos.shift();toast('Stockage plein : supprimez une ancienne photo')}};r.readAsDataURL(file)}
+async function toggleRecord(){if(recorder&&recorder.state==='recording'){recorder.stop();return}if(!navigator.mediaDevices?.getUserMedia){toast('Enregistrement non pris en charge');return}try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];recorder=new MediaRecorder(stream);recorder.ondataavailable=e=>chunks.push(e.data);recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'}),r=new FileReader();r.onload=()=>{state.voices.unshift({id:Date.now(),data:r.result,date:new Date().toLocaleString('fr-FR')});if(state.voices.length>10)state.voices.pop();try{save();renderAlbum();toast('Vocal enregistré')}catch{state.voices.shift();toast('Stockage plein')}};r.readAsDataURL(blob);stream.getTracks().forEach(t=>t.stop());$('#recordBtn').textContent='🎙️ Enregistrer';$('#recordStatus').textContent=''};recorder.start();$('#recordBtn').textContent='⏹️ Arrêter';$('#recordStatus').textContent='Enregistrement en cours…'}catch{toast('Autorisez l’accès au micro dans le navigateur')}}
+function renderAlbum(){const items=[...state.photos.map(x=>({...x,type:'photo'})),...state.voices.map(x=>({...x,type:'voice'}))].sort((a,b)=>b.id-a.id);$('#albumGrid').innerHTML=items.length?items.map(x=>x.type==='photo'?`<article class="album-item"><img src="${x.data}" alt="Souvenir"><div class="album-meta"><span>${x.date}</span><button data-del-photo="${x.id}">Supprimer</button></div></article>`:`<article class="album-item"><audio controls src="${x.data}"></audio><div class="album-meta"><span>${x.date}</span><button data-del-voice="${x.id}">Supprimer</button></div></article>`).join(''):'<div class="empty-message">Ajoutez votre première photo ou votre premier vocal.</div>';$$('[data-del-photo]').forEach(b=>b.onclick=()=>{state.photos=state.photos.filter(x=>x.id!==+b.dataset.delPhoto);save();renderAlbum()});$$('[data-del-voice]').forEach(b=>b.onclick=()=>{state.voices=state.voices.filter(x=>x.id!==+b.dataset.delVoice);save();renderAlbum()})}
+function renderPlaylist(){const el=$('#playlistList');el.innerHTML=state.songs.length?state.songs.map((s,i)=>`<article class="mini-card" style="--mini:#b15cff"><small>🎵 ${s.artist||'Artiste libre'}</small><p>${s.title}</p><button data-del-song="${i}">Supprimer</button></article>`).join(''):'<div class="empty-message">Votre playlist est encore vide.</div>';$$('[data-del-song]').forEach(b=>b.onclick=()=>{state.songs.splice(+b.dataset.delSong,1);save();renderPlaylist()})}
+
+function enterOnlineGame(detail){
+  playMode='online';
+  document.body.classList.add('online-mode');
+  $('#gameView').classList.add('online-active');
+  $('#chatPanel').classList.remove('hidden');
+  $('#onlineGameBar').classList.remove('hidden');
+  $('#onlineGameStatus').textContent=`Salle ${detail.code} · ${detail.playerName}`;
+  show('gameView');
+  if(detail.cardId){
+    const c=CARDS.find(x=>x.id===detail.cardId);
+    if(c){state.current=c.id;renderCard(c)}
+  }else{
+    $('#cardText').textContent='Les deux joueurs sont connectés. La première personne peut piocher.';
+    $('#cardCategory').textContent='EN LIGNE';
+    $('#cardIcon').textContent='🌐';
+  }
+  state.turn=detail.turn||'Gwen';
+  $('#turnBtn').textContent=state.turn;
+  $('#drawBtn').disabled=!detail.canDraw;
+  $('#drawBtn').textContent=detail.canDraw?'Piocher une carte':'Au tour de l’autre joueur';
+}
+window.addEventListener('online-room-ready',e=>enterOnlineGame(e.detail));
+window.addEventListener('online-room-update',e=>{
+  if(playMode!=='online')return;
+  const d=e.detail;
+  state.turn=d.turn||state.turn;
+  $('#turnBtn').textContent=state.turn;
+  $('#drawBtn').disabled=!d.canDraw;
+  $('#drawBtn').textContent=d.canDraw?'Piocher une carte':'Au tour de l’autre joueur';
+  if(d.cardId && d.cardId!==state.current){
+    const c=CARDS.find(x=>x.id===d.cardId);
+    if(c){state.current=c.id;state.history=[c.id,...state.history.filter(id=>id!==c.id)].slice(0,80);save();renderCard(c)}
+  }
+});
+window.addEventListener('online-left',()=>{
+  playMode='local';
+  document.body.classList.remove('online-mode');
+  $('#gameView').classList.remove('online-active');
+  $('#chatPanel').classList.add('hidden');
+  $('#onlineGameBar').classList.add('hidden');
+  $('#drawBtn').disabled=false;
+  $('#drawBtn').textContent='Piocher une carte';
+  show('homeView');
+});
+window.addEventListener('online-error',e=>toast(e.detail?.message||'Erreur Firebase'));
+
+$$('[data-open]').forEach(b=>b.onclick=()=>show(b.dataset.open));$('#menuBtn').onclick=()=>{$('#drawer').classList.add('open');$('#overlay').classList.add('open');$('#drawer').setAttribute('aria-hidden','false')};$('#closeDrawer').onclick=$('#overlay').onclick=closeDrawer;$('#playBtn').onclick=start;$('#onlineBtn').onclick=()=>show('onlineView');$('#resumeBtn').onclick=()=>{show('gameView');const c=currentCard();if(c)renderCard(c)};$('#drawBtn').onclick=draw;$('#skipBtn').onclick=draw;$('#favoriteBtn').onclick=toggleFavorite;$('#turnBtn').onclick=()=>{
+  if(playMode==='online'){toast('Le tour est synchronisé automatiquement');return}
+  state.turn=state.turn==='Gwen'?'Nicolas':'Gwen';$('#turnBtn').textContent=state.turn;save()
+};$('#soundBtn').onclick=()=>{state.sound=!state.sound;$('#soundBtn').textContent=state.sound?'🔊':'🔇';save()};$('#filterBtn').onclick=()=>show('categoriesView');
+$('#leaveOnlineGame').onclick=()=>window.OnlineGame?.leave();
+$('#toggleChat').onclick=()=>{const p=$('#chatPanel');p.classList.toggle('collapsed');$('#toggleChat').textContent=p.classList.contains('collapsed')?'+':'−'};$('#playSelectedBtn').onclick=start;$('#photoInput').onchange=e=>addPhoto(e.target.files[0]);$('#recordBtn').onclick=toggleRecord;$('#photoQuick').onclick=()=>{show('albumView');setTimeout(()=>$('#photoInput').click(),100)};$('#voiceQuick').onclick=()=>{show('albumView');setTimeout(toggleRecord,100)};$('#songForm').onsubmit=e=>{e.preventDefault();state.songs.unshift({title:$('#songTitle').value.trim(),artist:$('#songArtist').value.trim()});save();e.target.reset();renderPlaylist();toast('Chanson ajoutée')};$('#resetBtn').onclick=()=>{if(confirm('Effacer favoris, historique, album et playlist ?')){localStorage.removeItem(STORE);state={...initial};location.reload()}};window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('#installBtn').classList.remove('hidden')});$('#installBtn').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;$('#installBtn').classList.add('hidden')}};if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+$('#soundBtn').textContent=state.sound?'🔊':'🔇';$('#turnBtn').textContent=state.turn;updateStats();renderCategories();
+})();

@@ -1,0 +1,17 @@
+{
+  "name": "Gwen & Nicolas — Le Jeu des Deux V6",
+  "short_name": "Gwen & Nicolas",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#100b18",
+  "theme_color": "#140f1f",
+  "description": "Un jeu de cartes complice pour Gwen et Nicolas.",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+COMMENT INVITER L'AUTRE JOUEUR
+
+1. Ouvrez le jeu.
+2. Cliquez sur « Jouer en ligne à deux ».
+3. Choisissez votre prénom.
+4. Cliquez sur « Créer la salle ».
+5. Le code, le lien et le QR code apparaissent automatiquement.
+6. Cliquez sur « Envoyer l'invitation » ou copiez le lien.
+7. Envoyez ce lien par SMS, WhatsApp, Messenger, etc.
+8. L'autre joueur ouvre le lien et clique sur « Rejoindre ».
+
+Le tchat apparaît dès que les deux joueurs sont connectés.
