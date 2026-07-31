@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function room(roomCode) {
+      return get(/databases/$(database)/documents/gwenNicolasRooms/$(roomCode));
+    }
+
+    function isMember(roomCode) {
+      return signedIn() && (
+        room(roomCode).data.hostUid == request.auth.uid ||
+        room(roomCode).data.guestUid == request.auth.uid
+      );
+    }
+
+    match /gwenNicolasRooms/{roomCode} {
+      allow create: if signedIn()
+        && request.resource.data.hostUid == request.auth.uid
+        && request.resource.data.guestUid == null;
+
+      allow read: if signedIn() && (
+        resource.data.hostUid == request.auth.uid ||
+        resource.data.guestUid == request.auth.uid ||
+        (resource.data.status == "waiting" && resource.data.guestUid == null)
+      );
+
+      allow update: if signedIn() && (
+        (resource.data.status == "waiting"
+          && resource.data.guestUid == null
+          && request.resource.data.hostUid == resource.data.hostUid
+          && request.resource.data.guestUid == request.auth.uid)
+        ||
+        resource.data.hostUid == request.auth.uid
+        ||
+        resource.data.guestUid == request.auth.uid
+      );
+
+      allow delete: if signedIn() && resource.data.hostUid == request.auth.uid;
+
+      match /messages/{messageId} {
+        allow read, create: if isMember(roomCode);
+        allow update, delete: if false;
+      }
+    }
+  }
+}
